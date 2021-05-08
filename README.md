@@ -27,6 +27,10 @@ kubectl apply -f ovs-cni-master/examples/ovs-cni.yml
 ```
 
 Download 5gc-kubernetes repository
+```
+
+```
+
 
 Build and config bridge
 ```
