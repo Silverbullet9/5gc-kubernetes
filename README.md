@@ -68,12 +68,12 @@ kubectl apply -f mongo/mongo-pv.yaml
 kubectl apply -f mongo/mongo-pvc.yaml
 kubectl apply -f unix-daemonset.yaml
 kubectl apply -f mongo/5gc-mongo.yaml
+kubectl expose deployment db --port=27017
 ```
 
 **Build network functions**
 
 ```
-cd ~/5gc-kubernetes
 kubectl apply -f 5gc-configmap.yaml
 kubectl apply -f ./networkFunctions
 ```
