@@ -29,7 +29,6 @@ kubectl apply -f ovs-cni-master/examples/ovs-cni.yml
 
 Download 5gc-kubernetes repository
 ```
-cd ~
 git clone https://github.com/Silverbullet9/5gc-kubernetes.git
 ```
 
@@ -39,7 +38,7 @@ Build and config bridge
 ovs-vsctl add-br br1
 ifconfig br1 up
 ifconfig br1 192.168.36.254 netmask 255.255.255.0
-kubectl apply -f ~/5gc-kubernetes/ovs-net-crd.yaml
+kubectl apply -f 5gc-kubernetes/ovs-net-crd.yaml
 ```
 
 **Build Images**
@@ -63,24 +62,23 @@ sudo make install
 **Build database**
 
 ```
-cd ~/5gc-kubernetes
-kubectl apply -f mongo/mongo-pv.yaml
-kubectl apply -f mongo/mongo-pvc.yaml
-kubectl apply -f unix-daemonset.yaml
-kubectl apply -f mongo/5gc-mongo.yaml
+kubectl apply -f 5gc-kubernetes/mongo/mongo-pv.yaml
+kubectl apply -f 5gc-kubernetes/mongo/mongo-pvc.yaml
+kubectl apply -f 5gc-kubernetes/unix-daemonset.yaml
+kubectl apply -f 5gc-kubernetes/mongo/5gc-mongo.yaml
 kubectl expose deployment db --port=27017
 ```
 
 **Build network functions**
 
 ```
-kubectl apply -f 5gc-configmap.yaml
-kubectl apply -f ./networkFunctions
+kubectl apply -f 5gc-kubernetes/5gc-configmap.yaml
+kubectl apply -f ./5gc-kubernetes/networkFunctions
 ```
 
 **Build webui**
 
 ```
-kubectl apply -f webui/webui.yaml
-kubectl apply -f webui/webui-service.yaml
+kubectl apply -f 5gc-kubernetes/webui/webui.yaml
+kubectl apply -f 5gc-kubernetes/webui/webui-service.yaml
 ```
