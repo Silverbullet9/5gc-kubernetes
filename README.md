@@ -38,7 +38,7 @@ Build and config bridge
 ```
 ovs-vsctl add-br br1
 ifconfig br1 up
-ifconfig br1 192.168.37.254 netmask 255.255.254.0
+ifconfig br1 192.168.36.254 netmask 255.255.255.0
 kubectl apply -f ~/5gc-kubernetes/ovs-net-crd.yaml
 ```
 
