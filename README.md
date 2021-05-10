@@ -78,8 +78,9 @@ kubectl apply -f 5gc-configmap.yaml
 kubectl apply -f ./networkFunctions
 ```
 
-**Expose services**
+**Build webui**
 
 ```
-
+kubectl apply -f webui/webui.yaml
+kubectl apply -f webui/webui-service.yaml
 ```
