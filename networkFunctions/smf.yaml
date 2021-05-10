@@ -1,0 +1,72 @@
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: smf-deployment
+spec:
+  selector:
+    matchLabels:
+      app: smf
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: smf
+    spec:
+      containers:      
+      - name: network-function
+        image: free5gc-compose_free5gc-smf
+        imagePullPolicy: IfNotPresent
+        command: ["./smf"]
+        args: ["-smfcfg","../config/smfcfg.yaml","-uerouting","../config/uerouting.yaml"]
+        volumeMounts:
+        - name: smfcfg
+          mountPath: /free5gc/config/smfcfg.yaml
+          subPath: smfcfg.yaml
+        - name: uerouting
+          mountPath: /free5gc/config/uerouting.yaml
+          subPath: uerouting.yaml
+        env:
+        - name: GIN_MODE
+          value: release
+      nodeSelector:
+        kubernetes.io/hostname: k8s-master
+      initContainers:
+      - name: init-network-client
+        image: sdnvortex/network-controller:v0.4.9
+        command: ["/go/bin/client"]
+        args: ["-s=unix:///tmp/vortex.sock", "-b=br1", "-n=eth1", "-i=192.168.36.3/24", "-g=192.168.36.254"]
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_UUID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.uid
+        volumeMounts:
+        - mountPath: /tmp/
+          name: grpc-sock
+      volumes:
+      - name: grpc-sock
+        hostPath:
+          path: /tmp/vortex/
+      - name: smfcfg
+        configMap:
+          name: 5gc-configmap
+          items:
+          - key: smfcfg.yaml
+            path: smfcfg.yaml
+      - name: uerouting
+        configMap:
+          name: 5gc-configmap
+          items:
+          - key: uerouting.yaml
+            path: uerouting.yaml
+       
+
+

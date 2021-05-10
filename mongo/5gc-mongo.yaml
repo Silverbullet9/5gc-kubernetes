@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    5gc: db
+  name: db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      5gc: db
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        5gc: db
+    spec:
+      containers:
+        - args:
+            - mongod
+            - --port
+            - "27017"
+          image: mongo
+          imagePullPolicy: IfNotPresent
+          name: mongodb
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - mountPath: /data/db
+              name: dbdata
+      restartPolicy: Always
+      nodeSelector:
+        kubernetes.io/hostname: k8s-master
+      initContainers:
+      - name: init-network-client
+        image: sdnvortex/network-controller:v0.4.9
+        command: ["/go/bin/client"]
+        args: ["-s=unix:///tmp/vortex.sock", "-b=br1", "-n=eth1", "-i=192.168.36.88/24", "-g=192.168.36.254"]
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_UUID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.uid
+        volumeMounts:
+        - mountPath: /tmp/
+          name: grpc-sock
+      volumes:
+      - name: grpc-sock
+        hostPath:
+          path: /tmp/vortex/
+      - name: dbdata
+        persistentVolumeClaim:
+          claimName: dbdata
