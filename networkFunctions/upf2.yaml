@@ -1,0 +1,60 @@
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: upf2-deployment
+spec:
+  selector:
+    matchLabels:
+      app: upf2
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: upf2
+    spec:
+      containers:      
+      - name: network-function
+        image: free5gc-compose_free5gc-upf-2
+        imagePullPolicy: IfNotPresent
+        command: ["./free5gc-upfd"]
+        args: ["-f", "../config/upfcfg2.yaml"]
+        volumeMounts:
+          - name: upfcfg2
+            mountPath: /free5gc/config/upfcfg2.yaml
+            subPath: upfcfg2.yaml
+        securityContext:
+          capabilities:
+            add: ["NET_ADMIN"]
+      nodeSelector:
+        kubernetes.io/hostname: k8s-master
+      initContainers:
+      - name: init-network-client
+        image: sdnvortex/network-controller:v0.4.9
+        command: ["/go/bin/client"]
+        args: ["-s=unix:///tmp/vortex.sock", "-b=br1", "-n=eth1", "-i=192.168.36.12/24", "-g=192.168.36.254"]
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_UUID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.uid
+        volumeMounts:
+        - mountPath: /tmp/
+          name: grpc-sock
+      volumes:
+      - name: grpc-sock
+        hostPath:
+          path: /tmp/vortex/
+      - name: upfcfg2
+        configMap:
+          name: 5gc-configmap
+          items:
+          - key: upfcfg2.yaml
+            path: upfcfg2.yaml
